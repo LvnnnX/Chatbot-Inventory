@@ -16,7 +16,7 @@ export default function useChat() {
     setInput('');
     try {
       const res = await api.postChat(userText);
-      const botText = res?.reply ?? '...';
+      const botText = res?.response ?? '...';
       appendMessage(botText, 'bot');
     } catch (e) {
       appendMessage('Error contacting backend', 'bot');
