@@ -1,0 +1,22 @@
+{
+  "name": "mcp-chatbot-backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@google/genai": "latest",
+    "@modelcontextprotocol/sdk": "latest",
+    "cors": "latest",
+    "dotenv": "^17.4.1",
+    "express": "latest",
+    "helmet": "latest",
+    "sqlite3": "latest"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "supertest": "^6.3.3"
+  }
+}

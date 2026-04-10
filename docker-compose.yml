@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend/data:/usr/src/app/data
+      - ./backend/src:/usr/src/app/src
+    env_file:
+      - ./backend/.env
+    environment:
+      - NODE_ENV=development
+
+  mobile-dev:
+    image: node:20
+    working_dir: /usr/src/app
+    volumes:
+      - ./mobile:/usr/src/app
+    ports:
+      - "8081:8081"
+    command: npm start
+    env_file:
+      - ./mobile/.env

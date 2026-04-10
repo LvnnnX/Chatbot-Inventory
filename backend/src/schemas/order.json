@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "orderId": { "type": "string" },
+    "productName": { "type": "string" },
+    "quantity": { "type": "integer" },
+    "totalPrice": { "type": "number" },
+    "status": { "type": "string" },
+    "timestamp": { "type": "string" }
+  },
+  "required": ["orderId", "productName", "quantity", "totalPrice", "status", "timestamp"]
+}

@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  backend:
+    image: node:18
+    working_dir: /app/backend
+    volumes:
+      - ./backend:/app/backend
+    command: node src/index.js
+    ports:
+      - "3001:3001"
+  mobile:
+    image: node:18
+    working_dir: /app/mobile
+    volumes:
+      - ./mobile:/app/mobile
+    command: npm start
+    ports:
+      - "19000:19000"
+  mcp-sqlite:
+    image: alpine
+    container_name: mcp-sqlite
+    command: sh -c "echo SQLite MCP server placeholder" 
+  mcp-fs:
+    image: alpine
+    container_name: mcp-fs
+    command: sh -c "echo Filesystem MCP server placeholder" 
