@@ -43,9 +43,13 @@ router.post('/chat', async (req, res) => {
       response = await chatWithGemini(chatHistory, tools);
     }
     
-    res.json({ reply: response.text || "No reply", ok: true });
+    const replyText = response.text
+      || response?.candidates?.[0]?.content?.parts?.[0]?.text
+      || "I couldn't generate a response.";
+    res.json({ response: replyText, ok: true });
   } catch (err) {
-    console.error("Chat Error:", err);
+    console.error("Chat Error:", err.message);
+    console.error("Stack:", err.stack);
     res.status(500).json({ error: err.message });
   }
 });
