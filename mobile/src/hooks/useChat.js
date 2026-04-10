@@ -4,6 +4,7 @@ import api from '../services/api';
 export default function useChat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   function appendMessage(text, from = 'user') {
     setMessages((msgs) => [...msgs, { text, from }]);
@@ -14,14 +15,18 @@ export default function useChat() {
     if (!userText) return;
     appendMessage(userText, 'user');
     setInput('');
+    setIsLoading(true);
+    
     try {
       const res = await api.postChat(userText);
       const botText = res?.response ?? '...';
       appendMessage(botText, 'bot');
     } catch (e) {
       appendMessage('Error contacting backend', 'bot');
+    } finally {
+      setIsLoading(false);
     }
   }
 
-  return { messages, input, setInput, send };
+  return { messages, input, setInput, send, isLoading };
 }
