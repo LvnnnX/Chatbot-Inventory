@@ -6,8 +6,8 @@
 .env.production
 .env.*.local
 # Kecualikan .env.example dan .env.template agar tetap bisa di-commit
-!.env.example
-!.env.template
+.env.example
+.env.template
 
 # ========================
 # Dependencies

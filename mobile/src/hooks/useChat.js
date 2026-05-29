@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import api from '../services/api';
 import { SHOW_DEMO, DEMO_MESSAGES } from '../demoSeed';
 
@@ -19,24 +19,28 @@ export default function useChat() {
   // (used by quick-reply chips and product "+" buttons).
   async function send(overrideText) {
     const userText = (typeof overrideText === 'string' ? overrideText : input).trim();
-    if (!userText) return;
+    if (!userText || isLoading) return;
 
     appendMessage({ text: userText, from: 'user' });
     setInput('');
     setIsLoading(true);
 
     try {
-      const res = await api.postChat(userText);
+      // Pass prior messages as history (backend may use it for context).
+      const res = await api.postChat(userText, messages);
       // Backend may return plain { response } today, or { response, products, order }
       // once it emits structured data — both render correctly.
       appendMessage({
-        text: res?.response ?? '...',
+        text: res?.response ?? 'Permintaan diterima, tapi belum ada balasan.',
         from: 'bot',
         products: res?.products,
         order: res?.order,
       });
     } catch (e) {
-      appendMessage({ text: 'Gagal menghubungi server. Coba lagi ya.', from: 'bot' });
+      appendMessage({
+        text: 'Server tidak bisa dihubungi. Cek API URL dan pastikan server jalan.',
+        from: 'bot',
+      });
     } finally {
       setIsLoading(false);
     }
