@@ -26,6 +26,29 @@ module.exports = async function handler(req, res) {
   const { message, history = [] } = req.body || {};
 
   if (!message) return res.status(400).json({ error: 'Missing message' });
+
+  const normalizedMessage = message.toLowerCase();
+  if (normalizedMessage.includes('low') || normalizedMessage.includes('stock')) {
+    const lowStock = INVENTORY.filter((item) => item.quantity <= 60);
+    return res.status(200).json({
+      response: `Low-stock products (threshold <= 60):\n${lowStock
+        .map((item) => `- ${item.name}: ${item.quantity} units ($${item.price})`)
+        .join('\n')}`,
+      ok: true,
+      data: { products: lowStock },
+    });
+  }
+
+  if (normalizedMessage.includes('product') || normalizedMessage.includes('inventory')) {
+    return res.status(200).json({
+      response: `Inventory products:\n${INVENTORY
+        .map((item) => `- ${item.name}: ${item.quantity} units ($${item.price})`)
+        .join('\n')}`,
+      ok: true,
+      data: { products: INVENTORY },
+    });
+  }
+
   if (!process.env.DEEPSEEK_API_KEY) return res.status(500).json({ error: 'Missing DEEPSEEK_API_KEY' });
 
   try {
