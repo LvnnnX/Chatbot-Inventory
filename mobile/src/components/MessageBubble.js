@@ -1,69 +1,43 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, shadows } from '../styles/theme';
+import { colors, fonts, radius } from '../theme';
 
+// Pasar text bubble. User = dark ink, bot = white with hairline border.
 export default function MessageBubble({ text, from }) {
   const isBot = from === 'bot';
-  const isSystem = from === 'system';
-
   return (
-    <View style={[
-      styles.bubble,
-      isBot ? styles.botBubble : styles.userBubble,
-      isSystem && styles.systemBubble,
-    ]}>
-      <Text style={[isBot ? styles.botText : styles.userText, isSystem && styles.systemText]}>
-        {text}
-      </Text>
+    <View style={[styles.bubble, isBot ? styles.bot : styles.me]}>
+      <Text style={[styles.text, isBot ? styles.botText : styles.meText]}>{text}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   bubble: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 18,
-    marginVertical: 6,
-    maxWidth: '86%',
-    ...shadows.sm,
+    paddingHorizontal: 17,
+    paddingVertical: 13,
+    borderRadius: radius,
   },
-  userBubble: {
-    alignSelf: 'flex-end',
-    backgroundColor: colors.primary,
-    borderBottomRightRadius: 6,
+  me: {
+    backgroundColor: colors.userBubble,
+    borderBottomRightRadius: 7,
   },
-  botBubble: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.surface,
-    borderBottomLeftRadius: 6,
+  bot: {
+    backgroundColor: colors.paper,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.line,
+    borderBottomLeftRadius: 7,
+    shadowColor: '#0B1F14',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  systemBubble: {
-    alignSelf: 'center',
-    maxWidth: '92%',
-    backgroundColor: colors.primarySoft,
-    borderColor: 'transparent',
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  userText: {
-    color: colors.surface,
-    fontSize: 16,
-    lineHeight: 22,
-    fontWeight: '500',
-  },
-  botText: {
-    color: colors.ink,
-    fontSize: 16,
+  text: {
+    fontFamily: fonts.body,
+    fontSize: 15.5,
     lineHeight: 23,
   },
-  systemText: {
-    color: colors.primaryDark,
-    fontSize: 13,
-    lineHeight: 18,
-    textAlign: 'center',
-    fontWeight: '700',
-  },
+  meText: { color: '#FFFFFF' },
+  botText: { color: colors.ink },
 });
