@@ -1,40 +1,61 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ChatInterface from '../components/ChatInterface';
 import useChat from '../hooks/useChat';
+import { colors, quickPrompts, shadows } from '../styles/theme';
 
 export default function ChatScreen() {
   const { messages, input, setInput, send, isLoading } = useChat();
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView 
-        style={styles.container} 
+      <KeyboardAvoidingView
+        style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>AI Assistant</Text>
+          <View>
+            <Text style={styles.kicker}>MCP Inventory</Text>
+            <Text style={styles.headerTitle}>AI Stock Assistant</Text>
+            <Text style={styles.headerSubtitle}>Browse products, check stock, and create orders via chat.</Text>
+          </View>
+          <View style={styles.statusPill}>
+            <View style={styles.statusDot} />
+            <Text style={styles.statusText}>Online</Text>
+          </View>
         </View>
-        
+
+        <View style={styles.promptPanel}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptList}>
+            {quickPrompts.map((prompt) => (
+              <TouchableOpacity key={prompt} style={styles.promptChip} onPress={() => send(prompt)} disabled={isLoading}>
+                <Text style={styles.promptText}>{prompt}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
         <ChatInterface messages={messages} isLoading={isLoading} />
-        
+
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={input}
             onChangeText={setInput}
-            placeholder="Type your message..."
-            placeholderTextColor="#9CA3AF"
+            placeholder="Ask: show products under $100..."
+            placeholderTextColor={colors.inkMuted}
             multiline
             maxLength={500}
+            returnKeyType="send"
+            onSubmitEditing={() => send()}
           />
-          <TouchableOpacity 
-            style={[styles.sendButton, !input.trim() && styles.sendButtonDisabled]} 
-            onPress={send}
+          <TouchableOpacity
+            style={[styles.sendButton, (!input.trim() || isLoading) && styles.sendButtonDisabled]}
+            onPress={() => send()}
             disabled={!input.trim() || isLoading}
           >
-            <Text style={styles.sendButtonText}>Send</Text>
+            <Text style={styles.sendButtonText}>{isLoading ? '...' : 'Send'}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -45,68 +66,128 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
   },
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.paper,
   },
   header: {
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
+    backgroundColor: colors.surface,
+    paddingVertical: 18,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 3,
+    borderBottomColor: colors.border,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    ...shadows.sm,
     zIndex: 10,
   },
+  kicker: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: colors.primary,
+    marginBottom: 4,
+  },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.ink,
+    letterSpacing: -0.4,
+  },
+  headerSubtitle: {
+    marginTop: 4,
+    fontSize: 13,
+    color: colors.inkSoft,
+    maxWidth: 260,
+    lineHeight: 18,
+  },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#ECFDF5',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+    backgroundColor: colors.success,
+  },
+  statusText: {
+    color: colors.success,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#111827',
+  },
+  promptPanel: {
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  promptList: {
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  promptChip: {
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.primarySoft,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  promptText: {
+    color: colors.primaryDark,
+    fontSize: 13,
+    fontWeight: '700',
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: colors.border,
   },
   input: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.paper,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 20,
+    borderColor: colors.border,
+    borderRadius: 22,
     paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingTop: 11,
+    paddingBottom: 11,
     fontSize: 16,
-    maxHeight: 100,
-    color: '#111827',
+    maxHeight: 110,
+    color: colors.ink,
   },
   sendButton: {
     marginLeft: 10,
-    backgroundColor: '#007AFF',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
+    ...shadows.sm,
   },
   sendButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: colors.inkMuted,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   sendButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  }
+    color: colors.surface,
+    fontSize: 15,
+    fontWeight: '800',
+  },
 });
