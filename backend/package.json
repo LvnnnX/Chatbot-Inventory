@@ -7,12 +7,12 @@
     "test": "jest"
   },
   "dependencies": {
-    "@google/genai": "latest",
     "@modelcontextprotocol/sdk": "latest",
     "cors": "latest",
     "dotenv": "^17.4.1",
     "express": "latest",
     "helmet": "latest",
+    "openai": "latest",
     "sqlite3": "latest"
   },
   "devDependencies": {

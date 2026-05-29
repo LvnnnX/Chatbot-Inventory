@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mcpClient = require('../mcp/client');
-const { chatWithGemini } = require('../services/gemini');
+const { chatWithDeepSeek, SYSTEM_PROMPT } = require('../services/deepseek');
 
 router.post('/chat', async (req, res) => {
   const message = req.body?.message || '';
@@ -9,47 +9,73 @@ router.post('/chat', async (req, res) => {
     return res.status(400).json({ error: 'Missing message' });
   }
 
-  // Use mock if NO GEMINI API KEY is present
-  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_api_key_here') {
-    return res.json({ reply: `Mocked reply to: ${message}` });
+  // Mode mock kalau API key DeepSeek belum di-set — berguna buat ngetes
+  // wiring server + MCP tanpa manggil LLM (dan tanpa biaya token).
+  if (!process.env.DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY === 'your_api_key_here') {
+    return res.json({ response: `Mocked reply to: ${message}`, ok: true, mock: true });
   }
 
   try {
-    const chatHistory = [{ role: 'user', parts: [{ text: message }] }];
-    const tools = [...mcpClient.getSqliteTools(), ...mcpClient.getFsTools()];
+    const sqliteTools = mcpClient.getSqliteTools();
+    const fsTools = mcpClient.getFsTools();
+    const allTools = [...sqliteTools, ...fsTools];
 
-    let response = await chatWithGemini(chatHistory, tools);
+    // Format pesan gaya OpenAI/DeepSeek (system + user).
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: message },
+    ];
 
-    // Simplistic handling of function call
-    if (response.functionCalls && response.functionCalls.length > 0) {
-      const call = response.functionCalls[0];
-      const functionName = call.name;
-      const args = call.args;
+    let aiMsg = await chatWithDeepSeek(messages, allTools);
 
-      let toolResult;
-      try {
-        if (mcpClient.getSqliteTools().some(t => t.name === functionName)) {
-          toolResult = await mcpClient.callSqliteTool(functionName, args);
-        } else if (mcpClient.getFsTools().some(t => t.name === functionName)) {
-          toolResult = await mcpClient.callFsTool(functionName, args);
-        } else {
-          toolResult = { error: "Unknown tool" };
+    // Loop tool-calling. DeepSeek bisa minta beberapa tool sekaligus per giliran.
+    let guard = 0;
+    while (aiMsg.tool_calls && aiMsg.tool_calls.length > 0 && guard < 8) {
+      guard++;
+
+      // Wajib: dorong balik pesan assistant yang berisi tool_calls dulu,
+      // baru tiap hasil tool dengan tool_call_id yang cocok.
+      messages.push(aiMsg);
+
+      for (const call of aiMsg.tool_calls) {
+        const name = call.function.name;
+        let args = {};
+        try {
+          args = JSON.parse(call.function.arguments || '{}');
+        } catch (_) {
+          args = {};
         }
-      } catch (err) {
-        toolResult = { error: err.message };
+
+        let toolResultText;
+        try {
+          let callRes;
+          if (sqliteTools.some((t) => t.name === name)) {
+            callRes = await mcpClient.callSqliteTool(name, args);
+          } else if (fsTools.some((t) => t.name === name)) {
+            callRes = await mcpClient.callFsTool(name, args);
+          } else {
+            callRes = { content: [{ text: JSON.stringify({ error: 'Tool not found' }) }] };
+          }
+          toolResultText = callRes.content?.[0]?.text || JSON.stringify(callRes.content);
+        } catch (err) {
+          toolResultText = JSON.stringify({ error: err.message });
+        }
+
+        messages.push({
+          role: 'tool',
+          tool_call_id: call.id,
+          content: String(toolResultText),
+        });
       }
 
-      chatHistory.push({ role: 'user', parts: [{ text: `Function ${functionName} returned: ${JSON.stringify(toolResult)}` }] });
-      response = await chatWithGemini(chatHistory, tools);
+      aiMsg = await chatWithDeepSeek(messages, allTools);
     }
-    
-    const replyText = response.text
-      || response?.candidates?.[0]?.content?.parts?.[0]?.text
-      || "I couldn't generate a response.";
+
+    const replyText = aiMsg.content || "I couldn't generate a response.";
     res.json({ response: replyText, ok: true });
   } catch (err) {
-    console.error("Chat Error:", err.message);
-    console.error("Stack:", err.stack);
+    console.error('Chat Error:', err.message);
+    console.error('Stack:', err.stack);
     res.status(500).json({ error: err.message });
   }
 });
