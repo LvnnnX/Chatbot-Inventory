@@ -1,4 +1,5 @@
-const BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_ORIGIN = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001';
+const BASE = API_ORIGIN.endsWith('/api') ? API_ORIGIN : `${API_ORIGIN.replace(/\/$/, '')}/api`;
 
 async function postChat(message, history = []) {
   const res = await fetch(`${BASE}/chat`, {
