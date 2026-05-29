@@ -9,8 +9,8 @@ router.post('/chat', async (req, res) => {
     return res.status(400).json({ error: 'Missing message' });
   }
 
-  // Use mock if NO GEMINI API KEY is present
-  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_api_key_here') {
+  // Use mock if NO DeepSeek API key is present
+  if (!process.env.DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY === 'your_api_key_here') {
     return res.json({ reply: `Mocked reply to: ${message}` });
   }
 

@@ -1,11 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors, shadows } from '../styles/theme';
 
 export default function MessageBubble({ text, from }) {
   const isBot = from === 'bot';
+  const isSystem = from === 'system';
+
   return (
-    <View style={[styles.bubble, isBot ? styles.botBubble : styles.userBubble]}>
-      <Text style={isBot ? styles.botText : styles.userText}>{text}</Text>
+    <View style={[
+      styles.bubble,
+      isBot ? styles.botBubble : styles.userBubble,
+      isSystem && styles.systemBubble,
+    ]}>
+      <Text style={[isBot ? styles.botText : styles.userText, isSystem && styles.systemText]}>
+        {text}
+      </Text>
     </View>
   );
 }
@@ -14,35 +23,47 @@ const styles = StyleSheet.create({
   bubble: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 20,
+    borderRadius: 18,
     marginVertical: 6,
-    maxWidth: '80%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    maxWidth: '86%',
+    ...shadows.sm,
   },
   userBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: '#007AFF',
-    borderBottomRightRadius: 4,
+    backgroundColor: colors.primary,
+    borderBottomRightRadius: 6,
   },
   botBubble: {
     alignSelf: 'flex-start',
-    backgroundColor: '#FFFFFF',
-    borderBottomLeftRadius: 4,
+    backgroundColor: colors.surface,
+    borderBottomLeftRadius: 6,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
+  },
+  systemBubble: {
+    alignSelf: 'center',
+    maxWidth: '92%',
+    backgroundColor: colors.primarySoft,
+    borderColor: 'transparent',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   userText: {
-    color: '#FFFFFF',
+    color: colors.surface,
     fontSize: 16,
     lineHeight: 22,
+    fontWeight: '500',
   },
   botText: {
-    color: '#1F2937',
+    color: colors.ink,
     fontSize: 16,
-    lineHeight: 22,
-  }
+    lineHeight: 23,
+  },
+  systemText: {
+    color: colors.primaryDark,
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    fontWeight: '700',
+  },
 });

@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import MessageBubble from './MessageBubble';
+import { colors } from '../styles/theme';
 
 export default function ChatInterface({ messages = [], isLoading = false }) {
   const flatListRef = useRef(null);
@@ -9,12 +10,16 @@ export default function ChatInterface({ messages = [], isLoading = false }) {
     <MessageBubble text={item.text} from={item.from} />
   );
 
+  const data = messages.length > 0
+    ? messages
+    : [{ text: 'Ask about stock, prices, product search, or place an order in natural language.', from: 'system' }];
+
   return (
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={messages}
-        keyExtractor={(item, index) => index.toString()}
+        data={data}
+        keyExtractor={(item, index) => `${item.from}-${index}`}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
@@ -22,8 +27,8 @@ export default function ChatInterface({ messages = [], isLoading = false }) {
       />
       {isLoading && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color="#007AFF" />
-          <Text style={styles.loadingText}>Bot is typing...</Text>
+          <ActivityIndicator size="small" color={colors.primary} />
+          <Text style={styles.loadingText}>Inventory assistant is checking MCP tools...</Text>
         </View>
       )}
     </View>
@@ -33,7 +38,7 @@ export default function ChatInterface({ messages = [], isLoading = false }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.paper,
   },
   listContent: {
     padding: 16,
@@ -47,8 +52,8 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginLeft: 8,
-    color: '#6B7280',
+    color: colors.inkMuted,
     fontSize: 14,
     fontStyle: 'italic',
-  }
+  },
 });
